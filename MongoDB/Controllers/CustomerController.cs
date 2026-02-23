@@ -11,8 +11,8 @@ namespace MongoDB.Controllers
     {
 
         private readonly IMongoCollection<Customer> _customers;
-        
-        public CustomerController(MongoDbService mongoDbService) 
+
+        public CustomerController(MongoDbService mongoDbService)
         {
             _customers = mongoDbService.Database?.GetCollection<Customer>("customer");
         }
@@ -34,5 +34,36 @@ namespace MongoDB.Controllers
 
         }
 
+        [HttpPost]
+        public async Task<ActionResult> Post(Customer customer)
+        {
+            await _customers.InsertOneAsync(customer);
+
+            return CreatedAtAction(nameof(GetById), new { id = customer.Id }, customer);
+
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> Put(Customer customer)
+        {
+
+            var filter = Builders<Customer>.Filter.Eq(x => x.Id, customer.Id);
+
+            await _customers.ReplaceOneAsync(filter, customer);
+
+            return Ok();
+
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(string id)
+        {
+            var filter = Builders<Customer>.Filter.Eq(x => x.Id, id);
+            await _customers.DeleteOneAsync(filter);
+            return Ok();
+
+        }
+
     }
+
 }
